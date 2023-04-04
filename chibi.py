@@ -44,7 +44,8 @@ def draw_splash_page():
     rules = [
         "Rules:",
         "1. Players take turns placing a piece on the grid.",
-        "2. If a piece is surrounded by an opponent's pieces, it's captured.",
+        "2. If a piece is surrounded by an opponent's pieces, it's captured",
+        "   and the capturing player receives another turn.",
         "3. If a player fills a row or column with more than half their pieces,",
         "   they capture all the pieces in that row or column.",
         "4. The game ends when the entire grid is filled.",
@@ -170,11 +171,16 @@ def place_piece(x, y, player):
         players[player]['score'] += 1
         captured = False
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            if check_capture(x + dx, y + dy, player):
+            nx, ny = x + dx, y + dy
+            prev_owner = grid[ny][nx] if in_bounds(nx, ny) else -1
+            check_capture(nx, ny, player)
+            if prev_owner != -1 and prev_owner != player and grid[ny][nx] == player:
                 captured = True
         check_majority(x, y, player)
         return captured
     return False
+
+
 
 def main():
     global current_input, game_state, input_string, current_player
