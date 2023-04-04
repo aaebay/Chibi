@@ -8,9 +8,16 @@ HEX_RADIUS = 25
 HEX_SPACING = 0
 GRID_SIZE = 10
 SQUARE_SIZE = 50
-WINDOW_WIDTH = GRID_SIZE * SQUARE_SIZE + 200
-WINDOW_HEIGHT = GRID_SIZE * SQUARE_SIZE
-BG_COLOR = (255, 255, 255)
+
+LEFT_PADDING = 75
+TOP_PADDING = 75
+
+GRID_WIDTH = int(GRID_SIZE * (1.5 * HEX_RADIUS + HEX_SPACING) + LEFT_PADDING * 2)
+GRID_HEIGHT = int(GRID_SIZE * (math.sqrt(3) * HEX_RADIUS + HEX_SPACING) + math.sqrt(3) * HEX_RADIUS / 2 + HEX_SPACING / 2 + TOP_PADDING * 2)
+
+WINDOW_WIDTH = GRID_WIDTH + 200
+WINDOW_HEIGHT = GRID_HEIGHT
+
 HIGHLIGHT_COLOR = (0, 0, 0)
 PLAYER_COLORS = [
     (255, 99, 71), (50, 205, 50), (65, 105, 225),
@@ -22,10 +29,10 @@ PLAYER_COLORS = [
     (123, 104, 238), (255, 160, 122), (60, 179, 113),
     (255, 99, 255), (240, 128, 128), (30, 144, 255),
 ]
+
+
 available_colors = PLAYER_COLORS.copy()
-
-
-current_input = 0
+bg_color = (255, 255, 255)
 current_player = 0
 grid = [[-1 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 game_state = "splash_page"
@@ -38,12 +45,12 @@ pygame.display.set_caption('Chibi')
 font = pygame.font.Font(None, 24)
 
 def draw_splash_page():
-    screen.fill(BG_COLOR)
+    screen.fill(bg_color)
     title_font = pygame.font.Font(None, 72)
     title_text = title_font.render("Chibi", True, (0, 0, 0))
     screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 50))
 
-    rules_font = pygame.font.Font(None, 25)
+    rules_font = pygame.font.Font(None, 20)
     rules = [
         "Rules:",
         "1. Players take turns placing a piece on the grid.",
@@ -75,21 +82,26 @@ def draw_hexagon(screen, x, y, color):
 def draw_grid():
     for x in range(GRID_SIZE):
         for y in range(GRID_SIZE):
-            hex_x = x * (1.5 * HEX_RADIUS + HEX_SPACING)
-            hex_y = y * (math.sqrt(3) * HEX_RADIUS + HEX_SPACING)
+            hex_x = LEFT_PADDING + x * (1.5 * HEX_RADIUS + HEX_SPACING)
+            hex_y = TOP_PADDING + y * (math.sqrt(3) * HEX_RADIUS + HEX_SPACING)
 
             if x % 2 != 0:
                 hex_y += math.sqrt(3) * HEX_RADIUS / 2 + HEX_SPACING / 2
 
+            # Draw background color for each hexagon
+            bg_points = [(hex_x + HEX_RADIUS * math.cos(math.radians(angle)), hex_y + HEX_RADIUS * math.sin(math.radians(angle))) for angle in range(0, 360, 60)]
+            pygame.draw.polygon(screen, players[current_player]['color'], bg_points)
+
+            # Draw hexagon
             owner = grid[y][x]
-            color = players[owner]['color'] if owner != -1 else BG_COLOR
+            color = players[owner]['color'] if owner != -1 else (255, 255, 255)
             draw_hexagon(screen, hex_x, hex_y, color)
 
 
 def draw_player_info():
     info_surf = pygame.Surface((WINDOW_WIDTH - GRID_SIZE * SQUARE_SIZE,
                                 WINDOW_HEIGHT))
-    info_surf.fill(BG_COLOR)
+    info_surf.fill(bg_color)
     for i, player in enumerate(players):
         player_rect = pygame.Rect(10, 50 * i + 10, 30, 30)
         pygame.draw.rect(info_surf, player['color'], player_rect)
@@ -104,7 +116,7 @@ def draw_player_info():
 
 def draw_player_setup():
     global input_string
-    screen.fill(BG_COLOR)
+    screen.fill(bg_color)
     if game_state == "player_count":
         prompt = "Enter the number of players (2-5): "
     elif game_state == "player_name":
@@ -136,18 +148,21 @@ def get_hex_neighbors(x, y):
 def check_capture(x, y, player):
     if not in_bounds(x, y) or grid[y][x] == -1 or grid[y][x] == player:
         return
-    surrounded = True
-    for nx, ny in get_hex_neighbors(x, y):
-        if grid[ny][nx] != player:
-            surrounded = False
-            break
 
-    if surrounded:
+    neighbors = get_hex_neighbors(x, y)
+    player_neighbors_count = 0
+
+    for nx, ny in neighbors:
+        if grid[ny][nx] == player:
+            player_neighbors_count += 1
+
+    if player_neighbors_count >= 4:
         prev_owner = grid[y][x]
         if 0 <= prev_owner < len(players):
             grid[y][x] = player
             players[player]['score'] += 1
             players[prev_owner]['score'] -= 1
+
 
 def check_majority(x, y, player):
     for direction in ('row', 'column'):
@@ -200,6 +215,8 @@ def place_piece(x, y, player):
     return False
 
 def coord_to_grid(x, y):
+    x -= LEFT_PADDING
+    y -= TOP_PADDING
     grid_x = int(round(x / (1.5 * HEX_RADIUS + HEX_SPACING)))
     if grid_x % 2 == 0:
         grid_y = int(round(y / (math.sqrt(3) * HEX_RADIUS + HEX_SPACING)))
@@ -208,8 +225,9 @@ def coord_to_grid(x, y):
 
     return grid_x, grid_y
 
+
 def main():
-    global current_input, game_state, input_string, current_player
+    global current_input, game_state, input_string, current_player, bg_color
 
     grid = [[-1 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 
@@ -238,6 +256,8 @@ def main():
                             game_state = "player_name"
                             input_string = ""
                         else:
+                            # Set the background color to white before the game starts
+                            bg_color = (255, 255, 255)
                             game_state = "playing"
 
 
@@ -261,6 +281,9 @@ def main():
                         input_string += event.unicode
 
         if game_state == "playing":
+            screen.fill(bg_color)
+            # Update the background color to match the current player's color
+            bg_color = players[current_player]['color']
             draw_grid()
             draw_player_info()
         elif game_state == "splash_page":
