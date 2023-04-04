@@ -44,10 +44,8 @@ def draw_splash_page():
     rules = [
         "Rules:",
         "1. Players take turns placing a piece on the grid.",
-        "2. If a piece is surrounded by an opponent's pieces, it's captured",
-        "   and the capturing player receives another turn.",
-        "3. If a player fills a row or column with more than half their pieces,",
-        "   they capture all the pieces in that row or column.",
+        "2. If a piece is surrounded by an opponent's pieces, it's captured and the capturing player receives another turn.",
+        "3. If a player fills a row or column with more than half their pieces, they capture all the pieces in that row or column.",
         "4. The game ends when the entire grid is filled.",
         "5. The player with the most captured pieces wins!",
     ]
@@ -92,7 +90,7 @@ def draw_player_setup():
     global input_string
     screen.fill(BG_COLOR)
     if game_state == "player_count":
-        prompt = "Enter the number of players (2-20): "
+        prompt = "Enter the number of players (2-5): "
     elif game_state == "player_name":
         prompt = f"Enter name for Player {len(players) + 1}: "
     else:
@@ -218,7 +216,10 @@ def main():
                         if input_string:
                             if game_state == "player_count":
                                 num_players = int(input_string)
-                                game_state = "player_name"
+                                if 2 <= num_players <= 5:  # Enforce min and max number of players
+                                    game_state = "player_name"
+                                else:
+                                    input_string = ""  # Clear input string and prompt for a valid number
                             else:
                                 players.append({"name": input_string, "score": 0})
                                 game_state = "player_color"
@@ -237,6 +238,7 @@ def main():
             draw_player_setup()
 
         pygame.display.flip()
+
 
 if __name__ == "__main__":
     main()
