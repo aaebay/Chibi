@@ -36,29 +36,30 @@ font = pygame.font.Font(None, 24)
 
 def draw_splash_page():
     screen.fill(BG_COLOR)
-    font = pygame.font.Font(None, 48)
-    title = font.render("Chibi", True, (0, 0, 0))
-    title_rect = title.get_rect()
-    title_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3)
-    screen.blit(title, title_rect)
+    title_font = pygame.font.Font(None, 72)
+    title_text = title_font.render("Chibi", True, (0, 0, 0))
+    screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 50))
 
+    rules_font = pygame.font.Font(None, 25)
     rules = [
-        "1. Players take turns to capture a square.",
-        "2. Capturing a square gives another turn.",
-        "3. When a row or column is complete,",
-        "   the player with the majority captures",
-        "   the entire row or column.",
+        "Rules:",
+        "1. Players take turns placing a piece on the grid.",
+        "2. If a piece is surrounded by an opponent's pieces, it's captured.",
+        "3. If a player fills a row or column with more than half their pieces,",
+        "   they capture all the pieces in that row or column.",
+        "4. The game ends when the entire grid is filled.",
+        "5. The player with the most captured pieces wins!",
     ]
-    font = pygame.font.Font(None, 24)
-    for i, rule in enumerate(rules):
-        rule_text = font.render(rule, True, (0, 0, 0))
-        screen.blit(rule_text, (WINDOW_WIDTH // 4, (WINDOW_HEIGHT // 2) + i * 30))
+    y_offset = 150
+    for rule in rules:
+        rule_text = rules_font.render(rule, True, (0, 0, 0))
+        screen.blit(rule_text, (WINDOW_WIDTH // 2 - rule_text.get_width() // 2, y_offset))
+        y_offset += 40
 
-    go_play_text = font.render("Click to start!", True, (0, 0, 0))
-    go_play_rect = go_play_text.get_rect()
-    go_play_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT - 100)
-    screen.blit(go_play_text, go_play_rect)
-
+    go_play_button = pygame.Rect(WINDOW_WIDTH // 2 - 100, y_offset + 30, 200, 50)
+    pygame.draw.rect(screen, (0, 0, 0), go_play_button, 2)
+    go_play_text = font.render("Go Play", True, (0, 0, 0))
+    screen.blit(go_play_text, (WINDOW_WIDTH // 2 - go_play_text.get_width() // 2, y_offset + 40))
 
 def draw_grid():
     for x in range(GRID_SIZE):
