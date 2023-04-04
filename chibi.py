@@ -17,6 +17,7 @@ PLAYER_COLORS = [
     (123, 104, 238), (255, 160, 122), (60, 179, 113),
     (255, 99, 255), (240, 128, 128), (30, 144, 255),
 ]
+available_colors = PLAYER_COLORS.copy()
 
 
 current_input = 0
@@ -99,7 +100,7 @@ def draw_player_setup():
         input_text = font.render(input_string, True, (0, 0, 0))
         screen.blit(input_text, (10, 50))
     elif game_state == "player_color":
-        for i, color in enumerate(PLAYER_COLORS):
+        for i, color in enumerate(available_colors):
             color_rect = pygame.Rect(10 + (i % 6) * 50, 50 + (i // 6) * 50, 30, 30)
             pygame.draw.rect(screen, color, color_rect)
 
@@ -200,15 +201,16 @@ def main():
                                 current_player = (current_player + 1) % len(players)
                 elif game_state == "player_color":  # Fix the indentation here
                     color_idx = (x - 10) // 50 + ((y - 50) // 50) * 6
-                    if 0 <= color_idx < len(PLAYER_COLORS):
-                            chosen_color = PLAYER_COLORS[color_idx]
-                            if chosen_color not in [player['color'] for player in players]:
-                                players[-1]['color'] = chosen_color
-                                if len(players) < num_players:
-                                    game_state = "player_name"
-                                    input_string = ""
-                                else:
-                                    game_state = "playing"
+                    if 0 <= color_idx < len(available_colors):
+                        chosen_color = available_colors[color_idx]
+                        players[-1]['color'] = chosen_color
+                        available_colors.remove(chosen_color)
+                        if len(players) < num_players:
+                            game_state = "player_name"
+                            input_string = ""
+                        else:
+                            game_state = "playing"
+
 
             elif event.type == pygame.KEYDOWN:
                 if game_state == "player_count" or game_state == "player_name":
