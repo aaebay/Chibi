@@ -8,19 +8,16 @@ WINDOW_HEIGHT = GRID_SIZE * SQUARE_SIZE
 BG_COLOR = (255, 255, 255)
 HIGHLIGHT_COLOR = (0, 0, 0)
 PLAYER_COLORS = [
-    (255, 0, 0),
-    (0, 255, 0),
-    (0, 0, 255),
-    (255, 255, 0),
-    (255, 0, 255),
-    (0, 255, 255),
-    (128, 0, 0),
-    (0, 128, 0),
-    (0, 0, 128),
-    (128, 128, 0),
-    (128, 0, 128),
-    (0, 128, 128),
+    (255, 99, 71), (50, 205, 50), (65, 105, 225),
+    (255, 255, 51), (255, 105, 180), (64, 224, 208),
+    (255, 140, 0), (75, 0, 130), (176, 48, 96),
+    (255, 215, 0), (106, 90, 205), (0, 255, 127),
+    (255, 20, 147), (255, 165, 0), (0, 206, 209),
+    (138, 43, 226), (205, 92, 92), (0, 139, 139),
+    (123, 104, 238), (255, 160, 122), (60, 179, 113),
+    (255, 99, 255), (240, 128, 128), (30, 144, 255),
 ]
+
 
 current_input = 0
 current_player = 0
@@ -201,15 +198,18 @@ def main():
                             captured = place_piece(grid_x, grid_y, current_player)
                             if not captured:
                                 current_player = (current_player + 1) % len(players)
-                elif game_state == "player_color":
+                elif game_state == "player_color":  # Fix the indentation here
                     color_idx = (x - 10) // 50 + ((y - 50) // 50) * 6
                     if 0 <= color_idx < len(PLAYER_COLORS):
-                        players[-1]['color'] = PLAYER_COLORS[color_idx]
-                        if len(players) < num_players:
-                            game_state = "player_name"
-                            input_string = ""
-                        else:
-                            game_state = "playing"
+                            chosen_color = PLAYER_COLORS[color_idx]
+                            if chosen_color not in [player['color'] for player in players]:
+                                players[-1]['color'] = chosen_color
+                                if len(players) < num_players:
+                                    game_state = "player_name"
+                                    input_string = ""
+                                else:
+                                    game_state = "playing"
+
             elif event.type == pygame.KEYDOWN:
                 if game_state == "player_count" or game_state == "player_name":
                     if event.key == pygame.K_RETURN:
@@ -221,7 +221,7 @@ def main():
                                 else:
                                     input_string = ""  # Clear input string and prompt for a valid number
                             else:
-                                players.append({"name": input_string, "score": 0})
+                                players.append({"name": input_string, "score": 0, "color": None})
                                 game_state = "player_color"
                             input_string = ""
                     elif event.key == pygame.K_BACKSPACE:
@@ -238,6 +238,7 @@ def main():
             draw_player_setup()
 
         pygame.display.flip()
+
 
 
 if __name__ == "__main__":
