@@ -19,7 +19,23 @@ WINDOW_WIDTH = GRID_WIDTH + PLAYER_INFO_WIDTH
 WINDOW_HEIGHT = GRID_HEIGHT
 
 HIGHLIGHT_COLOR = (0, 0, 0)
-PLAYER_COLORS = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 50), (255, 100, 180), (50, 255, 255), (255, 120, 0), (150, 50, 200), (200, 80, 100), (255, 200, 0), (150, 120, 255), (0, 255, 180), (255, 0, 200), (255, 180, 0), (50, 220, 220), (170, 50, 255), (255, 90, 90), (0, 170, 170), (150, 150, 255), (255, 130, 100), (60, 200, 130), (255, 50, 255), (240, 100, 100), (30, 200, 255), (200, 70, 200), (200, 200, 50), (255, 50, 50), (80, 150, 255), (255, 150, 50), (0, 255, 255)]
+PLAYER_COLORS = [
+  (255, 255, 255),    # White
+  (255, 0, 0),        # Red
+  (255, 215, 0),      # Gold
+  (139, 69, 19),      # Brown
+  (255, 255, 255),    # White
+  (0, 0, 255),        # Blue
+  (0, 200, 0),        # Green
+  (128, 128, 128),    # Grey
+  (255, 165, 0),      # Orange
+  (255, 255, 0),      # Yellow
+  (255, 192, 203),    # Pink
+  (230, 230, 250),    # Lavender
+  (255, 218, 185),    # Peach
+  (137, 207, 240),    # Baby blue
+  (152, 255, 152),    # Mint green
+]
 
 available_colors = PLAYER_COLORS.copy()
 bg_color = (72, 118, 127)
@@ -231,7 +247,7 @@ def place_piece(x, y, player):
                 captured = True
         check_majority(x, y, player)
         return captured
-    return False
+    return True
 
 def coord_to_grid(x, y):
     x -= LEFT_PADDING
