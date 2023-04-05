@@ -19,20 +19,12 @@ WINDOW_WIDTH = GRID_WIDTH + 200
 WINDOW_HEIGHT = GRID_HEIGHT
 
 HIGHLIGHT_COLOR = (0, 0, 0)
-PLAYER_COLORS = [
-    (255, 99, 71), (50, 205, 50), (65, 105, 225),
-    (255, 255, 51), (255, 105, 180), (64, 224, 208),
-    (255, 140, 0), (75, 0, 130), (176, 48, 96),
-    (255, 215, 0), (106, 90, 205), (0, 255, 127),
-    (255, 20, 147), (255, 165, 0), (0, 206, 209),
-    (138, 43, 226), (205, 92, 92), (0, 139, 139),
-    (123, 104, 238), (255, 160, 122), (60, 179, 113),
-    (255, 99, 255), (240, 128, 128), (30, 144, 255),
-]
+PLAYER_COLORS = [    (255, 0, 0), (0, 255, 0), (0, 0, 255),    (255, 255, 50), (255, 100, 180), (50, 255, 255),    (255, 120, 0), (150, 50, 200), (200, 80, 100),    (255, 200, 0), (150, 120, 255), (0, 255, 180),    (255, 0, 200), (255, 180, 0), (50, 220, 220),    (170, 50, 255), (255, 90, 90), (0, 170, 170),    (150, 150, 255), (255, 130, 100), (60, 200, 130),    (255, 50, 255), (240, 100, 100), (30, 200, 255),    (200, 70, 200), (200, 200, 50), (255, 50, 50),    (80, 150, 255), (255, 150, 50), (0, 255, 255)]
+
 
 
 available_colors = PLAYER_COLORS.copy()
-bg_color = (255, 255, 255)
+bg_color = (72, 118, 127)
 current_player = 0
 grid = [[-1 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 game_state = "splash_page"
@@ -46,29 +38,33 @@ font = pygame.font.Font(None, 24)
 
 def draw_splash_page():
     screen.fill(bg_color)
-    title_font = pygame.font.Font(None, 72)
+    title_font = pygame.font.Font("freesansbold.ttf", 144)
     title_text = title_font.render("Chibi", True, (0, 0, 0))
     screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 50))
 
-    rules_font = pygame.font.Font(None, 20)
+    rules_font = pygame.font.Font("freesansbold.ttf", 20)
     rules = [
         "Rules:",
         "1. Players take turns placing a piece on the grid.",
-        "2. If a piece is surrounded by an opponent's pieces, it's captured and the capturing player receives another turn.",
-        "3. If a player fills a row or column with more than half their pieces, they capture all the pieces in that row or column.",
+        "2. If a piece is surrounded by an opponent's pieces,",
+        "it's captured and the capturing player receives another turn.",
+        "3. If a player fills a row or column with more than half",
+        "their pieces, they capture all the pieces in that row or column.",
         "4. The game ends when the entire grid is filled.",
         "5. The player with the most captured pieces wins!",
     ]
-    y_offset = 150
+    y_offset = 250
+    line_spacing = 25
     for rule in rules:
         rule_text = rules_font.render(rule, True, (0, 0, 0))
         screen.blit(rule_text, (WINDOW_WIDTH // 2 - rule_text.get_width() // 2, y_offset))
-        y_offset += 40
+        y_offset += line_spacing
 
-    go_play_button = pygame.Rect(WINDOW_WIDTH // 2 - 100, y_offset + 30, 200, 50)
+    go_play_button = pygame.Rect(WINDOW_WIDTH // 2 - 100, y_offset + 20, 200, 50)
     pygame.draw.rect(screen, (0, 0, 0), go_play_button, 2)
-    go_play_text = font.render("Go Play", True, (0, 0, 0))
-    screen.blit(go_play_text, (WINDOW_WIDTH // 2 - go_play_text.get_width() // 2, y_offset + 40))
+    go_play_text = pygame.font.Font("freesansbold.ttf", 32).render("Go Play", True, (0, 0, 0))
+    screen.blit(go_play_text, (WINDOW_WIDTH // 2 - go_play_text.get_width() // 2, y_offset + 30))
+
 
 def draw_hexagon(screen, x, y, color):
     points = []
