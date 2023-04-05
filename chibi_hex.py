@@ -32,7 +32,8 @@ players = []
 pygame.init()
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Chibi')
-font = pygame.font.Font(None, 24)
+setup_font = pygame.font.SysFont('arial', 36)
+score_font = pygame.font.SysFont('arial', 15)  # You can replace 'arial' with your desired font type, and 36 with your desired font size
 game_piece_image = pygame.image.load('resources/images/gamepiece.png').convert_alpha()
 
 
@@ -44,9 +45,10 @@ def draw_splash_page():
     title_text = title_font.render("Chibi", True, (0, 0, 0))
     screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 50))
 
-    rules_font = pygame.font.SysFont('arial', 15)
+    rules_font = pygame.font.SysFont('arial', 20)
     rules = [
         "Rules:",
+        "      ",
         "   1. Players take turns placing a piece on the honeycomb game board.",
         "   2. If a piece is surrounded by an opponent's pieces it's captured,", 
         "       and the capturing player receives another turn.",
@@ -56,17 +58,17 @@ def draw_splash_page():
         "   5. The player with the most captured pieces wins!",
     ]
     y_offset = 250
-    x_offset = 125
-    line_spacing = 25
+    x_offset = 200
+    line_spacing = 30
     for rule in rules:
         rule_text = rules_font.render(rule, True, (0, 0, 0))
         screen.blit(rule_text, (x_offset, y_offset))
         y_offset += line_spacing
 
-    go_play_button = pygame.Rect(WINDOW_WIDTH // 2 - 100, y_offset + 20, 200, 50)
+    go_play_button = pygame.Rect(WINDOW_WIDTH // 2 - 100, y_offset + 90, 200, 50)
     pygame.draw.rect(screen, (0, 0, 0), go_play_button, 2)
     go_play_text = pygame.font.SysFont('arial', 25).render("Begin", True, (0, 0, 0))
-    screen.blit(go_play_text, (WINDOW_WIDTH // 2 - go_play_text.get_width() // 2, y_offset + 30))
+    screen.blit(go_play_text, (WINDOW_WIDTH // 2 - go_play_text.get_width() // 2, y_offset + 98))
 
 
 def draw_hexagon(screen, x, y, color, draw_image=False):
@@ -95,7 +97,7 @@ def draw_grid():
 
             # Draw background color for each hexagon
             bg_points = [(hex_x + HEX_RADIUS * math.cos(math.radians(angle)), hex_y + HEX_RADIUS * math.sin(math.radians(angle))) for angle in range(0, 360, 60)]
-            pygame.draw.polygon(screen, players[current_player]['color'], bg_points)
+            pygame.draw.polygon(screen, bg_color, bg_points)
 
             # Draw hexagon
             owner = grid[y][x]
@@ -115,11 +117,11 @@ def draw_player_info():
         if i == current_player:
             pygame.draw.rect(info_surf, HIGHLIGHT_COLOR,
                              player_rect, 3)
-        font = pygame.font.Font(None, 36)
-        score_text = font.render(f"{player['name']}: {player['score']}",
+        score_text = score_font.render(f"{player['name']}: {player['score']}",
                                  True, (0, 0, 0))
         info_surf.blit(score_text, (50, 50 * i + 10))
     screen.blit(info_surf, (GRID_WIDTH - PLAYER_INFO_WIDTH, 0))
+
 
 
 def draw_player_setup():
@@ -132,15 +134,24 @@ def draw_player_setup():
     else:
         prompt = f"Choose color for {players[-1]['name']} (click on the color): "
 
-    prompt_text = font.render(prompt, True, (0, 0, 0))
-    screen.blit(prompt_text, (10, 10))
+    prompt_text = setup_font.render(prompt, True, (0, 0, 0))
+    screen.blit(prompt_text, (WINDOW_WIDTH // 2 - prompt_text.get_width() // 2, WINDOW_HEIGHT // 2 - 200))
     if game_state == "player_count" or game_state == "player_name":
-        input_text = font.render(input_string, True, (0, 0, 0))
-        screen.blit(input_text, (10, 50))
+        input_text = setup_font.render(input_string, True, (0, 0, 0))
+        screen.blit(input_text, (WINDOW_WIDTH // 2 - input_text.get_width() // 2, WINDOW_HEIGHT // 2))
     elif game_state == "player_color":
+        color_rect_width = 30
+        color_rect_spacing = 50
+        color_rect_rows = 6
+        total_width = color_rect_rows * color_rect_width + (color_rect_rows - 1) * (color_rect_spacing - color_rect_width)
+        start_x = (WINDOW_WIDTH - total_width) // 2
+
         for i, color in enumerate(available_colors):
-            color_rect = pygame.Rect(10 + (i % 6) * 50, 50 + (i // 6) * 50, 30, 30)
+            color_rect = pygame.Rect(start_x + (i % 6) * 50, (WINDOW_HEIGHT // 2 - 80) + (i // 6) * 50, 30, 30)
             pygame.draw.rect(screen, color, color_rect)
+
+
+
 
 def in_bounds(x, y):
     return 0 <= x < GRID_SIZE and 0 <= y < GRID_SIZE
@@ -253,12 +264,23 @@ def main():
                     game_state = "player_count"
                 elif game_state == "playing":
                     grid_x, grid_y = coord_to_grid(x, y)
-                    if in_bounds(grid_x, grid_y) and grid[grid_y][grid_x] == -1:
-                        captured = place_piece(grid_x, grid_y, current_player)
-                        if not captured:
-                            current_player = (current_player + 1) % len(players)
+                    if in_bounds(grid_x, grid_y):
+                        if grid[grid_y][grid_x] == -1:
+                            captured = place_piece(grid_x, grid_y, current_player)
+                            if not captured:
+                                current_player = (current_player + 1) % len(players)
                 elif game_state == "player_color":
-                    color_idx = (x - 10) // 50 + ((y - 50) // 50) * 6
+                    color_rect_width = 30
+                    color_rect_spacing = 50
+                    color_rect_rows = 6
+                    total_width = color_rect_rows * color_rect_width + (color_rect_rows - 1) * (color_rect_spacing - color_rect_width)
+                    start_x = (WINDOW_WIDTH - total_width) // 2
+                    start_y = WINDOW_HEIGHT // 2 - 80
+
+                    col_idx = (x - start_x) // 50
+                    row_idx = (y - start_y) // 50
+
+                    color_idx = row_idx * 6 + col_idx
                     if 0 <= color_idx < len(available_colors):
                         chosen_color = available_colors[color_idx]
                         players[-1]['color'] = chosen_color
@@ -297,18 +319,13 @@ def main():
             bg_color = players[current_player]['color']
             draw_grid()
             draw_player_info()
-
-            # Draw all game pieces on the screen
-            for piece in game_pieces:
-                screen.blit(piece['image'], piece['rect'])
         elif game_state == "splash_page":
             draw_splash_page()
-        else:
+        elif game_state == "player_count" or game_state == "player_name" or game_state == "player_color":
             draw_player_setup()
 
         pygame.display.flip()
-
-
+        pygame.time.delay(10)
 
 if __name__ == "__main__":
     main()
