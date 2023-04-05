@@ -38,31 +38,32 @@ font = pygame.font.Font(None, 24)
 
 def draw_splash_page():
     screen.fill(bg_color)
-    title_font = pygame.font.Font("freesansbold.ttf", 144)
+    title_font = pygame.font.SysFont('arial', 144)
     title_text = title_font.render("Chibi", True, (0, 0, 0))
     screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 50))
 
-    rules_font = pygame.font.Font("freesansbold.ttf", 20)
+    rules_font = pygame.font.SysFont('arial', 15)
     rules = [
         "Rules:",
-        "1. Players take turns placing a piece on the grid.",
-        "2. If a piece is surrounded by an opponent's pieces,",
-        "it's captured and the capturing player receives another turn.",
-        "3. If a player fills a row or column with more than half",
-        "their pieces, they capture all the pieces in that row or column.",
-        "4. The game ends when the entire grid is filled.",
-        "5. The player with the most captured pieces wins!",
+        "   1. Players take turns placing a piece on the honeycomb game board.",
+        "   2. If a piece is surrounded by an opponent's pieces it's captured,", 
+        "       and the capturing player receives another turn.",
+        "   3. When a row or column is fully captured,",
+        "       the player that controls the majority of that row or column captures it.",
+        "   4. The game ends when the entire grid is filled.",
+        "   5. The player with the most captured pieces wins!",
     ]
     y_offset = 250
+    x_offset = 125
     line_spacing = 25
     for rule in rules:
         rule_text = rules_font.render(rule, True, (0, 0, 0))
-        screen.blit(rule_text, (WINDOW_WIDTH // 2 - rule_text.get_width() // 2, y_offset))
+        screen.blit(rule_text, (x_offset, y_offset))
         y_offset += line_spacing
 
     go_play_button = pygame.Rect(WINDOW_WIDTH // 2 - 100, y_offset + 20, 200, 50)
     pygame.draw.rect(screen, (0, 0, 0), go_play_button, 2)
-    go_play_text = pygame.font.Font("freesansbold.ttf", 32).render("Go Play", True, (0, 0, 0))
+    go_play_text = pygame.font.SysFont('arial', 25).render("Begin", True, (0, 0, 0))
     screen.blit(go_play_text, (WINDOW_WIDTH // 2 - go_play_text.get_width() // 2, y_offset + 30))
 
 
