@@ -2,9 +2,7 @@ import pygame
 import sys
 import math
 
-
-
-HEX_RADIUS = 25
+HEX_RADIUS = 80 // 2
 HEX_SPACING = 0
 GRID_SIZE = 10
 SQUARE_SIZE = 50
@@ -12,16 +10,16 @@ SQUARE_SIZE = 50
 LEFT_PADDING = 75
 TOP_PADDING = 75
 
-GRID_WIDTH = int(GRID_SIZE * (1.5 * HEX_RADIUS + HEX_SPACING) + LEFT_PADDING * 2)
+PLAYER_INFO_WIDTH = 125
+GRID_WIDTH = int(GRID_SIZE * (1.5 * HEX_RADIUS + HEX_SPACING) + LEFT_PADDING * 2 + PLAYER_INFO_WIDTH)
 GRID_HEIGHT = int(GRID_SIZE * (math.sqrt(3) * HEX_RADIUS + HEX_SPACING) + math.sqrt(3) * HEX_RADIUS / 2 + HEX_SPACING / 2 + TOP_PADDING * 2)
 
-WINDOW_WIDTH = GRID_WIDTH + 200
+
+WINDOW_WIDTH = GRID_WIDTH + PLAYER_INFO_WIDTH
 WINDOW_HEIGHT = GRID_HEIGHT
 
 HIGHLIGHT_COLOR = (0, 0, 0)
-PLAYER_COLORS = [    (255, 0, 0), (0, 255, 0), (0, 0, 255),    (255, 255, 50), (255, 100, 180), (50, 255, 255),    (255, 120, 0), (150, 50, 200), (200, 80, 100),    (255, 200, 0), (150, 120, 255), (0, 255, 180),    (255, 0, 200), (255, 180, 0), (50, 220, 220),    (170, 50, 255), (255, 90, 90), (0, 170, 170),    (150, 150, 255), (255, 130, 100), (60, 200, 130),    (255, 50, 255), (240, 100, 100), (30, 200, 255),    (200, 70, 200), (200, 200, 50), (255, 50, 50),    (80, 150, 255), (255, 150, 50), (0, 255, 255)]
-
-
+PLAYER_COLORS = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 50), (255, 100, 180), (50, 255, 255), (255, 120, 0), (150, 50, 200), (200, 80, 100), (255, 200, 0), (150, 120, 255), (0, 255, 180), (255, 0, 200), (255, 180, 0), (50, 220, 220), (170, 50, 255), (255, 90, 90), (0, 170, 170), (150, 150, 255), (255, 130, 100), (60, 200, 130), (255, 50, 255), (240, 100, 100), (30, 200, 255), (200, 70, 200), (200, 200, 50), (255, 50, 50), (80, 150, 255), (255, 150, 50), (0, 255, 255)]
 
 available_colors = PLAYER_COLORS.copy()
 bg_color = (72, 118, 127)
@@ -35,6 +33,10 @@ pygame.init()
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Chibi')
 font = pygame.font.Font(None, 24)
+game_piece_image = pygame.image.load('resources/images/gamepiece.png').convert_alpha()
+
+
+
 
 def draw_splash_page():
     screen.fill(bg_color)
@@ -67,7 +69,7 @@ def draw_splash_page():
     screen.blit(go_play_text, (WINDOW_WIDTH // 2 - go_play_text.get_width() // 2, y_offset + 30))
 
 
-def draw_hexagon(screen, x, y, color):
+def draw_hexagon(screen, x, y, color, draw_image=False):
     points = []
     for angle in range(0, 360, 60):
         px = x + HEX_RADIUS * math.cos(math.radians(angle))
@@ -75,6 +77,12 @@ def draw_hexagon(screen, x, y, color):
         points.append((px, py))
     pygame.draw.polygon(screen, color, points)
     pygame.draw.lines(screen, (0, 0, 0), True, points, 1)
+
+    if draw_image:
+        tinted_image = game_piece_image.copy()
+        tinted_image.fill(color, special_flags=pygame.BLEND_RGBA_MULT)
+        screen.blit(tinted_image, (x - tinted_image.get_width() // 2, y - tinted_image.get_height() // 2))
+
 
 def draw_grid():
     for x in range(GRID_SIZE):
@@ -92,12 +100,14 @@ def draw_grid():
             # Draw hexagon
             owner = grid[y][x]
             color = players[owner]['color'] if owner != -1 else (255, 255, 255)
-            draw_hexagon(screen, hex_x, hex_y, color)
+            draw_image = True if owner != -1 else False  # Change this line to draw images for all players
+            draw_hexagon(screen, hex_x, hex_y, color, draw_image)
+
+
 
 
 def draw_player_info():
-    info_surf = pygame.Surface((WINDOW_WIDTH - GRID_SIZE * SQUARE_SIZE,
-                                WINDOW_HEIGHT))
+    info_surf = pygame.Surface((PLAYER_INFO_WIDTH, WINDOW_HEIGHT))
     info_surf.fill(bg_color)
     for i, player in enumerate(players):
         player_rect = pygame.Rect(10, 50 * i + 10, 30, 30)
@@ -109,7 +119,8 @@ def draw_player_info():
         score_text = font.render(f"{player['name']}: {player['score']}",
                                  True, (0, 0, 0))
         info_surf.blit(score_text, (50, 50 * i + 10))
-    screen.blit(info_surf, (GRID_SIZE * SQUARE_SIZE, 0))
+    screen.blit(info_surf, (GRID_WIDTH - PLAYER_INFO_WIDTH, 0))
+
 
 def draw_player_setup():
     global input_string
@@ -228,6 +239,9 @@ def main():
 
     grid = [[-1 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 
+    # Initialize the list of game pieces
+    game_pieces = []
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -243,7 +257,7 @@ def main():
                         captured = place_piece(grid_x, grid_y, current_player)
                         if not captured:
                             current_player = (current_player + 1) % len(players)
-                elif game_state == "player_color":  # Fix the indentation here
+                elif game_state == "player_color":
                     color_idx = (x - 10) // 50 + ((y - 50) // 50) * 6
                     if 0 <= color_idx < len(available_colors):
                         chosen_color = available_colors[color_idx]
@@ -283,6 +297,10 @@ def main():
             bg_color = players[current_player]['color']
             draw_grid()
             draw_player_info()
+
+            # Draw all game pieces on the screen
+            for piece in game_pieces:
+                screen.blit(piece['image'], piece['rect'])
         elif game_state == "splash_page":
             draw_splash_page()
         else:
@@ -294,3 +312,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
